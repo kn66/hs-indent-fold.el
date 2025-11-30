@@ -12,7 +12,6 @@ Traditional code folding packages like =hideshowvis= or =origami= typically disp
 
 - =flymake= / =flycheck= - Display diagnostic indicators
 - =diff-hl= / =git-gutter= - Show version control changes
-- =linum= / =display-line-numbers= - Line number display
 
 Configuring multiple packages to coexist in these limited spaces can be cumbersome and often leads to visual conflicts.
 
