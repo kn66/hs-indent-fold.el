@@ -34,15 +34,15 @@ Additionally, traditional folding packages display indicators only at the beginn
 
 - JSON
 
-   [[./sample1-json.gif]]
+  [[file:screenshots/sample1-json.gif]]
 
 - Elisp
 
-   [[./sample2-elisp.gif]]
+  [[file:screenshots/sample2-elisp.gif]]
 
 - Python
 
-   [[./sample3-python.gif]]
+  [[file:screenshots/sample3-python.gif]]
 
 ** Installation
 
