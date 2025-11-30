@@ -1,8 +1,8 @@
 ;;; hs-indent-fold.el --- Click-to-fold via indent region highlighting -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2024
+;; Copyright (C) 2025
 
-;; Author: Your Name
+;; Author: Nobuyuki Kamimoto
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: convenience, folding
@@ -43,26 +43,20 @@
   :prefix "hs-indent-fold-")
 
 (defface hs-indent-fold-face
-  '((((background dark))
-     :background "#2a2a3a")
-    (((background light))
-     :background "#e8e8f0"))
+  '((((background dark)) :background "#2a2a3a")
+    (((background light)) :background "#e8e8f0"))
   "Default face for foldable indent regions (used as fallback)."
   :group 'hs-indent-fold)
 
 (defface hs-indent-fold-hover-face
-  '((((background dark))
-     :background "#3a3a4a")
-    (((background light))
-     :background "#d8d8e8"))
+  '((((background dark)) :background "#3a3a4a")
+    (((background light)) :background "#d8d8e8"))
   "Default face for indent regions on mouse hover (used as fallback)."
   :group 'hs-indent-fold)
 
 (defface hs-indent-fold-folded-face
-  '((((background dark))
-     :background "#3a2a2a")
-    (((background light))
-     :background "#f0e8e8"))
+  '((((background dark)) :background "#3a2a2a")
+    (((background light)) :background "#f0e8e8"))
   "Default face for folded block indicator (used as fallback)."
   :group 'hs-indent-fold)
 
@@ -72,14 +66,26 @@
   :group 'hs-indent-fold)
 
 (defcustom hs-indent-fold-dark-palette
-  '("#2d3a4f" "#3a2d4f" "#2d4f3a" "#4f3a2d" "#2d4f4f" "#4f2d4f" "#4f4f2d")
+  '("#2d3a4f"
+    "#3a2d4f"
+    "#2d4f3a"
+    "#4f3a2d"
+    "#2d4f4f"
+    "#4f2d4f"
+    "#4f4f2d")
   "List of background colors for fold blocks in dark mode.
 These are deep, rich colors suitable for dark backgrounds."
   :type '(repeat color)
   :group 'hs-indent-fold)
 
 (defcustom hs-indent-fold-light-palette
-  '("#e8f0ff" "#ffe8f0" "#e8fff0" "#fff0e8" "#e8ffff" "#ffe8ff" "#fffff0")
+  '("#e8f0ff"
+    "#ffe8f0"
+    "#e8fff0"
+    "#fff0e8"
+    "#e8ffff"
+    "#ffe8ff"
+    "#fffff0")
   "List of background colors for fold blocks in light mode.
 These are soft, pastel colors suitable for light backgrounds."
   :type '(repeat color)
@@ -152,9 +158,10 @@ Positive values lighten (for dark mode), negative darken (for light mode)."
 (defun hs-indent-fold--get-block-color (block-index)
   "Get the background color for BLOCK-INDEX (0-based)."
   (let* ((dark-p (hs-indent-fold--frame-background-dark-p))
-         (palette (if dark-p
-                      hs-indent-fold-dark-palette
-                    hs-indent-fold-light-palette)))
+         (palette
+          (if dark-p
+              hs-indent-fold-dark-palette
+            hs-indent-fold-light-palette)))
     (if (and hs-indent-fold-color-by-block palette)
         (let* ((len (length palette))
                (idx (mod block-index len)))
@@ -166,8 +173,10 @@ Positive values lighten (for dark mode), negative darken (for light mode)."
   "Get the hover color for BLOCK-INDEX."
   (let ((base-color (hs-indent-fold--get-block-color block-index)))
     (if (hs-indent-fold--frame-background-dark-p)
-        (hs-indent-fold--lighten-color base-color hs-indent-fold-hover-lighten)
-      (hs-indent-fold--darken-color base-color hs-indent-fold-hover-lighten))))
+        (hs-indent-fold--lighten-color
+         base-color hs-indent-fold-hover-lighten)
+      (hs-indent-fold--darken-color
+       base-color hs-indent-fold-hover-lighten))))
 
 (defun hs-indent-fold--get-folded-color ()
   "Get the color for folded blocks."
@@ -180,13 +189,21 @@ Positive values lighten (for dark mode), negative darken (for light mode)."
 
 (defun hs-indent-fold--get-block-face (block-index)
   "Get or create a face for the given BLOCK-INDEX."
-  (let ((key (cons block-index (hs-indent-fold--frame-background-dark-p))))
+  (let ((key
+         (cons
+          block-index (hs-indent-fold--frame-background-dark-p))))
     (or (gethash key hs-indent-fold--block-faces)
-        (let ((face-name (intern (format "hs-indent-fold-block-%d-face" block-index)))
+        (let ((face-name
+               (intern
+                (format "hs-indent-fold-block-%d-face" block-index)))
               (bg-color (hs-indent-fold--get-block-color block-index))
-              (hover-color (hs-indent-fold--get-hover-color block-index)))
+              (hover-color
+               (hs-indent-fold--get-hover-color block-index)))
           (face-spec-set face-name `((t :background ,bg-color)))
-          (puthash key (cons face-name hover-color) hs-indent-fold--block-faces)
+          (puthash
+           key
+           (cons face-name hover-color)
+           hs-indent-fold--block-faces)
           (cons face-name hover-color)))))
 
 (defun hs-indent-fold--clear-block-faces ()
@@ -214,22 +231,31 @@ Returns a list of (block-start block-end indent-column) tuples."
           (while (re-search-forward hs-block-start-regexp nil t)
             (let* ((block-start (match-beginning 0))
                    (start-line (line-number-at-pos block-start))
-                   (indent-col (save-excursion
-                                 (goto-char block-start)
-                                 (current-indentation))))
+                   (indent-col
+                    (save-excursion
+                      (goto-char block-start)
+                      (current-indentation))))
               (save-excursion
                 (goto-char block-start)
                 (ignore-errors
-                  (funcall (symbol-value hs-indent-fold--forward-sexp-func) 1)
+                  (funcall (symbol-value
+                            hs-indent-fold--forward-sexp-func)
+                           1)
                   (let ((block-end (point))
                         (end-line (line-number-at-pos)))
                     (when (or (not hs-indent-fold-ignore-same-line)
                               (> end-line start-line))
-                      (push (list block-start block-end indent-col start-line end-line)
+                      (push (list
+                             block-start
+                             block-end
+                             indent-col
+                             start-line
+                             end-line)
                             blocks)))))))
           (nreverse blocks))))))
 
-(defun hs-indent-fold--make-overlay (start end block-start block-end block-index)
+(defun hs-indent-fold--make-overlay
+    (start end block-start block-end block-index)
   "Create an overlay from START to END for block from BLOCK-START to BLOCK-END.
 BLOCK-INDEX is the index of this block (0-based), used for color selection."
   (let* ((ov (make-overlay start end nil t nil))
@@ -249,22 +275,25 @@ BLOCK-INDEX is the index of this block (0-based), used for color selection."
     (push ov hs-indent-fold--overlays)
     ov))
 
-(defun hs-indent-fold--create-overlays-for-block (block-info block-index)
+(defun hs-indent-fold--create-overlays-for-block
+    (block-info block-index)
   "Create overlays for a single block described by BLOCK-INFO.
 BLOCK-INFO is (block-start block-end indent-col start-line end-line).
 BLOCK-INDEX is used to select the color for this block.
 Creates overlays for the indent region of each line within the block."
-  (pcase-let ((`(,block-start ,block-end ,block-indent ,_start-line ,_end-line) block-info))
+  (pcase-let ((`(,block-start
+                 ,block-end ,block-indent ,_start-line ,_end-line)
+               block-info))
     (save-excursion
       (goto-char block-start)
       (beginning-of-line)
       ;; Loop through all lines in the block
-      (while (and (<= (point) block-end)
-                  (not (eobp)))
+      (while (and (<= (point) block-end) (not (eobp)))
         (let* ((line-start (line-beginning-position))
-               (is-blank (save-excursion
-                           (beginning-of-line)
-                           (looking-at-p "^[[:space:]]*$")))
+               (is-blank
+                (save-excursion
+                  (beginning-of-line)
+                  (looking-at-p "^[[:space:]]*$")))
                (line-indent (current-indentation)))
           ;; Only create overlay if:
           ;; - Line is not blank
@@ -273,18 +302,26 @@ Creates overlays for the indent region of each line within the block."
             (when (>= line-indent block-indent)
               ;; Highlight from line start to the block's indent width
               ;; This creates a "bar" at the block's indent level
-              (let* ((bar-end (+ line-start block-indent))
-                     (indent-end (hs-indent-fold--get-indent-end line-start))
-                     ;; Use the smaller of bar-end and actual indent-end
-                     (ov-end (min bar-end indent-end)))
+              (let*
+                  ((bar-end (+ line-start block-indent))
+                   (indent-end
+                    (hs-indent-fold--get-indent-end line-start))
+                   ;; Use the smaller of bar-end and actual indent-end
+                   (ov-end (min bar-end indent-end)))
                 ;; Special case: if block-indent is 0, highlight first indent unit
                 (when (= block-indent 0)
-                  (setq ov-end (min indent-end
-                                    (+ line-start
-                                       (or (bound-and-true-p tab-width) 4)))))
+                  (setq ov-end
+                        (min indent-end
+                             (+ line-start
+                                (or (bound-and-true-p tab-width)
+                                    4)))))
                 (when (> ov-end line-start)
-                  (hs-indent-fold--make-overlay line-start ov-end
-                                                 block-start block-end block-index))))))
+                  (hs-indent-fold--make-overlay
+                   line-start
+                   ov-end
+                   block-start
+                   block-end
+                   block-index))))))
         (forward-line 1)))))
 
 (defun hs-indent-fold--clear-overlays ()
@@ -340,14 +377,17 @@ When multiple blocks overlap, prefer the innermost (smallest) block."
     ;; Find the smallest (innermost) block overlay at this position
     (dolist (ov ovs)
       (when (overlay-get ov 'hs-indent-fold)
-        (let* ((block-start (overlay-get ov 'hs-indent-fold-block-start))
+        (let* ((block-start
+                (overlay-get ov 'hs-indent-fold-block-start))
                (block-end (overlay-get ov 'hs-indent-fold-block-end))
                (size (- block-end block-start)))
           (when (or (null best-size) (< size best-size))
-            (setq best-ov ov
-                  best-size size)))))
+            (setq
+             best-ov ov
+             best-size size)))))
     (when best-ov
-      (let ((block-start (overlay-get best-ov 'hs-indent-fold-block-start)))
+      (let ((block-start
+             (overlay-get best-ov 'hs-indent-fold-block-start)))
         (save-excursion
           (goto-char block-start)
           (end-of-line)
@@ -362,8 +402,10 @@ When multiple blocks overlap, prefer the innermost (smallest) block."
   (let ((folded-color (hs-indent-fold--get-folded-color)))
     (dolist (ov hs-indent-fold--overlays)
       (when (overlay-buffer ov)
-        (let ((block-start (overlay-get ov 'hs-indent-fold-block-start))
-              (normal-face (overlay-get ov 'hs-indent-fold-normal-face)))
+        (let ((block-start
+               (overlay-get ov 'hs-indent-fold-block-start))
+              (normal-face
+               (overlay-get ov 'hs-indent-fold-normal-face)))
           (when block-start
             (save-excursion
               (goto-char block-start)
@@ -384,7 +426,8 @@ When multiple blocks overlap, prefer the innermost (smallest) block."
 (define-minor-mode hs-indent-fold-mode
   "Minor mode for click-to-fold via indent highlighting."
   :lighter " HsIF"
-  :group 'hs-indent-fold
+  :group
+  'hs-indent-fold
   (if hs-indent-fold-mode
       (progn
         ;; Ensure hs-minor-mode is enabled
@@ -393,22 +436,33 @@ When multiple blocks overlap, prefer the innermost (smallest) block."
         ;; Initial overlay creation
         (hs-indent-fold--refresh)
         ;; Setup hooks
-        (add-hook 'after-change-functions #'hs-indent-fold--after-change nil t)
-        (add-hook 'hs-hide-hook #'hs-indent-fold--update-folded-state nil t)
-        (add-hook 'hs-show-hook #'hs-indent-fold--update-folded-state nil t))
+        (add-hook
+         'after-change-functions #'hs-indent-fold--after-change
+         nil t)
+        (add-hook 'hs-hide-hook #'hs-indent-fold--update-folded-state
+                  nil
+                  t)
+        (add-hook 'hs-show-hook #'hs-indent-fold--update-folded-state
+                  nil
+                  t))
     ;; Cleanup
     (when hs-indent-fold--update-timer
       (cancel-timer hs-indent-fold--update-timer)
       (setq hs-indent-fold--update-timer nil))
-    (remove-hook 'after-change-functions #'hs-indent-fold--after-change t)
-    (remove-hook 'hs-hide-hook #'hs-indent-fold--update-folded-state t)
-    (remove-hook 'hs-show-hook #'hs-indent-fold--update-folded-state t)
+    (remove-hook
+     'after-change-functions #'hs-indent-fold--after-change
+     t)
+    (remove-hook 'hs-hide-hook #'hs-indent-fold--update-folded-state
+                 t)
+    (remove-hook 'hs-show-hook #'hs-indent-fold--update-folded-state
+                 t)
     (hs-indent-fold--clear-overlays)))
 
 ;; Reset colors when theme changes
 (when (boundp 'enable-theme-functions)
-  (add-hook 'enable-theme-functions
-            (lambda (&rest _) (hs-indent-fold-reset-colors))))
+  (add-hook
+   'enable-theme-functions
+   (lambda (&rest _) (hs-indent-fold-reset-colors))))
 
 (provide 'hs-indent-fold)
 
