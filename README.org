@@ -1,10 +1,10 @@
 * hs-indent-fold
 
-Click-to-fold functionality via indent region highlighting for Emacs.
+Click-to-fold functionality via indent region detection for Emacs.
 
 ** Overview
 
-=hs-indent-fold= provides a visual folding interface by highlighting the indentation area of foldable code blocks. Unlike traditional folding packages that use margin or fringe indicators, this package places mouse-clickable regions directly in the indentation space of your code.
+=hs-indent-fold= provides a simple click-to-fold interface by placing mouse-clickable regions in the indentation area of your code. Clicking on the indentation toggles the fold state using =hideshow=.
 
 ** Motivation
 
@@ -15,19 +15,31 @@ Traditional code folding packages like =hideshowvis= or =origami= typically disp
 
 Configuring multiple packages to coexist in these limited spaces can be cumbersome and often leads to visual conflicts.
 
-*hs-indent-fold* takes a different approach: it highlights the indentation region of each foldable block, making it clickable. This leaves the margin and fringe areas completely free for other packages to use without any configuration conflicts.
+*hs-indent-fold* takes a different approach: it makes the indentation region clickable. This leaves the margin and fringe areas completely free for other packages to use without any configuration conflicts.
 
-Additionally, traditional folding packages display indicators only at the beginning of each foldable block, requiring you to scroll or navigate to that starting line to toggle the fold. With =hs-indent-fold=, you can click anywhere on the highlighted indentation area within the block to fold or unfold it—no need to navigate back to the block's starting position.
+** Breaking Changes (v0.3)
+
+Version 0.3 is a major simplification. The following features have been *removed*:
+
+- Indent region highlighting (color-coded backgrounds)
+- Block-specific color palettes (=hs-indent-fold-dark-palette=, =hs-indent-fold-light-palette=)
+- Folded state color indication
+- =hs-indent-fold-reset-colors= command
+- =hs-indent-fold-color-by-block= option
+- =hs-indent-fold-ignore-same-line= option
+
+If you were using any of these customization variables, please remove them from your configuration.
+
+*** Why these changes?
+
+- *Focus on click-to-fold*: This package now focuses solely on providing click-to-fold functionality in the indentation area. For indent visualization, dedicated packages like =indent-bars= offer superior features.
+- *Better maintainability*: By using =hideshow= commands (=hs-toggle-hiding=) directly, the implementation is simpler and more maintainable.
 
 ** Features
 
-- Highlights indentation area of foldable blocks detected by =hideshow=
-- Click on highlighted indent region to fold/unfold
-- Different colors for expanded vs folded states
-- Color-coded blocks for visual distinction
-- Supports both dark and light themes
-- Automatic color adjustment on theme changes
-- Hover effects for better interactivity
+- Click on indent region to fold/unfold using =hideshow=
+- Hover highlight for visual feedback
+- Minimal and lightweight implementation
 
 ** Screenshots
 
@@ -71,56 +83,24 @@ Enable the mode in any programming buffer:
 
 Or enable it manually with =M-x hs-indent-fold-mode=.
 
-Once enabled, click on the highlighted indentation area to toggle folding.
+Once enabled, click on the indentation area to toggle folding.
 
 ** Customization
 
-*** Colors
-
 #+begin_src emacs-lisp
-;; Use different colors for each block (default: t)
-(setq hs-indent-fold-color-by-block t)
-
-;; Custom color palettes
-(setq hs-indent-fold-dark-palette
-      '("#2d3a4f" "#3a2d4f" "#2d4f3a" "#4f3a2d"))
-
-(setq hs-indent-fold-light-palette
-      '("#e8f0ff" "#ffe8f0" "#e8fff0" "#fff0e8"))
-
-;; Folded block colors
-(setq hs-indent-fold-dark-folded-color "#5f3a3a")
-(setq hs-indent-fold-light-folded-color "#ffdfdf")
-#+end_src
-
-*** Behavior
-
-#+begin_src emacs-lisp
-;; Ignore blocks that end on the same line (default: t)
-(setq hs-indent-fold-ignore-same-line t)
-
 ;; Delay before updating overlays after changes (default: 0.1)
 (setq hs-indent-fold-update-delay 0.1)
 #+end_src
 
-*** Reset Colors After Theme Change
-
-Colors are automatically reset when themes change (Emacs 29+). For manual reset:
-
-#+begin_src emacs-lisp
-M-x hs-indent-fold-reset-colors
-#+end_src
-
 ** Limitations
 
-*** Block Detection Based on hideshow
+*** Fold Detection Based on hideshow
 
-This package relies on =hideshow= for detecting foldable blocks. Unlike packages such as =indent-bars= that highlight indentation uniformly based on whitespace, =hs-indent-fold= highlights only the blocks that =hideshow= recognizes as foldable (functions, classes, etc.).
+This package relies on =hideshow= for fold detection. It calls =hs-toggle-hiding= at the clicked position, so folding behavior depends entirely on how =hideshow= interprets your code.
 
 This means:
-- Not all indented regions will be highlighted
-- Only syntactically meaningful blocks are marked
-- The highlighting follows code structure, not just indentation levels
+- Only lines that =hideshow= recognizes as foldable will actually fold
+- Language support depends on =hideshow='s built-in rules or custom configurations
 
 *** Parser Accuracy
 
@@ -128,7 +108,6 @@ This means:
 
 - Some blocks may not be detected correctly
 - Complex or unusual code structures might be misidentified
-- Language support depends on =hideshow='s built-in rules or custom configurations
 
 For more precise code folding, consider Tree-sitter based solutions if available for your Emacs version and programming language.
 
