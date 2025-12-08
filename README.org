@@ -51,7 +51,7 @@ If you were using any of these customization variables, please remove them from 
 
   [[file:screenshots/sample2-elisp.gif]]
 
-- Python
+- Python (with indent-tabs-mode)
 
   [[file:screenshots/sample3-python.gif]]
 
